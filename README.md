@@ -63,3 +63,4 @@ How to deploy to Railway (high-level)
 
 See .env.example for environment variable names you should set.
 Happy to walk you through each step (GitHub repo creation, Railway connection, Twilio sandbox wiring) — tell me which step you'd like to do right now.
+# trigger railway rescan
