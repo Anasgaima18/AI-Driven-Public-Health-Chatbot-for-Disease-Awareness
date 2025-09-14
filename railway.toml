@@ -1,6 +1,4 @@
-[build]
-builder = "DOCKERFILE"
-
+[comment]: # Removed global builder to allow per-service dockerfile paths
 [service.action-server]
 root = "action-server"
 dockerfile = "action-server/Dockerfile"
