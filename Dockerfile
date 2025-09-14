@@ -5,11 +5,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Copy a minimal requirements.txt to satisfy Railway
-COPY action-server/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy source
+# Copy source (no pip installs to avoid timeout)
 COPY . .
 
 # Dummy command - actual services run from railway.toml
