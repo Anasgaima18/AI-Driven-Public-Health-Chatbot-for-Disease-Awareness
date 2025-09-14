@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>SIH25049 Dashboard (placeholder)</title></head>
+<body>
+  <h1>SIH25049 — Dashboard (Placeholder)</h1>
+  <p>This is a simple placeholder dashboard. Replace with React app when ready.</p>
+  <form id="alertForm">
+    <label>District: <input id="district" value="Bengaluru"></label><br>
+    <label>Message: <input id="message" value="Demo: Dengue cases rising — remove standing water."></label><br>
+    <button type="button" onclick="sendAlert()">Send Alert (demo)</button>
+  </form>
+  <pre id="result"></pre>
+<script>
+async function sendAlert(){
+  const d = document.getElementById('district').value;
+  const m = document.getElementById('message').value;
+  const resp = await fetch('/api/send-alert', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:`district=${encodeURIComponent(d)}&message=${encodeURIComponent(m)}`});
+  const j = await resp.json();
+  document.getElementById('result').textContent = JSON.stringify(j, null, 2);
+}
+</script>
+</body>
+</html>

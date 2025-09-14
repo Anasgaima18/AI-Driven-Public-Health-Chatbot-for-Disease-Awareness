@@ -1,0 +1,11 @@
+version: "2.0"
+rules:
+- rule: Greet rule
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+- rule: Handle symptom query via action
+  steps:
+  - intent: ask_symptom
+  - action: action_generate_answer

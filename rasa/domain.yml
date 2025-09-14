@@ -1,0 +1,27 @@
+version: "2.0"
+intents:
+  - greet
+  - goodbye
+  - ask_symptom
+  - ask_prevention
+  - ask_vaccine_schedule
+  - opt_in_alerts
+  - feedback_positive
+  - feedback_negative
+
+entities:
+  - disease
+  - symptom
+  - location
+  - age
+
+responses:
+  utter_greet:
+    - text: "Hello! I'm HealthBuddy. How can I help you today?\nमैं आपकी कैसे मदद कर सकता हूँ?"
+  utter_goodbye:
+    - text: "Goodbye! Stay safe. / सुरक्षित रहें।"
+  utter_ask_vaccine:
+    - text: "I found a vaccination schedule: {vaccine_info}"
+
+actions:
+  - action_generate_answer

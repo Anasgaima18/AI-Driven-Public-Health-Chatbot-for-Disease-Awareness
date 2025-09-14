@@ -1,0 +1,42 @@
+version: "2.0"
+nlu:
+- intent: greet
+  examples: |
+    - hi
+    - hello
+    - hey
+    - नमस्ते
+    - हाय
+
+- intent: ask_symptom
+  examples: |
+    - I have fever and body ache
+    - My child has rash and fever
+    - मुझे बुखार है और बदन दर्द है
+    - बच्चे को दाने और बुखार हैं
+
+- intent: ask_vaccine_schedule
+  examples: |
+    - When is the next polio vaccine for my child
+    - मेरे बच्चे का अगला टीका कब है
+
+- intent: ask_prevention
+  examples: |
+    - How to prevent dengue
+    - डेंगू से कैसे बचें
+
+- intent: opt_in_alerts
+  examples: |
+    - I want to get alerts
+    - मुझे अलर्ट चाहिए
+
+- intent: feedback_positive
+  examples: |
+    - thanks
+    - thanks a lot
+    - अच्छा
+
+- intent: feedback_negative
+  examples: |
+    - that was wrong
+    - गलत जवाब

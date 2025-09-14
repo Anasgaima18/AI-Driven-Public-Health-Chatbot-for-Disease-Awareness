@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.env
+
+# Rasa models & logs
+models/
+logs/
+db.sqlite3
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+
+# Sensitive files
+*.key
+*.pem
