@@ -9,6 +9,9 @@ startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health-check"
 healthcheckTimeout = 300
 
+[services.action-server.build]
+builder = "docker"
+
 [services.action-server.env]
 PORT = "8000"
 PYTHONPATH = "/app"
@@ -29,6 +32,9 @@ startCommand = "rasa run --enable-api --cors '*' --port $PORT --host 0.0.0.0"
 healthcheckPath = "/status"
 healthcheckTimeout = 300
 
+[services.rasa-server.build]
+builder = "docker"
+
 [services.rasa-server.env]
 PORT = "5005"
 RASA_MODEL_SERVER = "http://localhost:5005"
@@ -39,6 +45,9 @@ name = "web-dashboard"
 source = "web-dashboard"
 startCommand = "nginx -g 'daemon off;'"
 healthcheckPath = "/"
+
+[services.web-dashboard.build]
+builder = "docker"
 
 [services.web-dashboard.env]
 PORT = "80"
