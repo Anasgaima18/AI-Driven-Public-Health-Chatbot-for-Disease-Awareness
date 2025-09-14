@@ -1,6 +1,3 @@
-[build]
-builder = "NIXPACKS"
-
 [[services]]
 id = "action-server"
 name = "action-server"
