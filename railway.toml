@@ -1,15 +1,14 @@
 [build]
-builder = "docker"
+builder = "DOCKERFILE"
 
-[[services]]
-id = "action-server"
-name = "action-server"
-source = "action-server"
+[service.action-server]
+root = "action-server"
+dockerfile = "action-server/Dockerfile"
 startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health-check"
 healthcheckTimeout = 300
 
-[services.action-server.env]
+[service.action-server.env]
 PORT = "8000"
 PYTHONPATH = "/app"
 ENVIRONMENT = "production"
@@ -21,24 +20,22 @@ TWILIO_SMS_NUMBER = "${TWILIO_SMS_NUMBER}"
 HEALTH_API_KEY = "${HEALTH_API_KEY}"
 HEALTH_API_URL = "${HEALTH_API_URL}"
 
-[[services]]
-id = "rasa-server"
-name = "rasa-server"
-source = "rasa"
+[service.rasa-server]
+root = "rasa"
+dockerfile = "rasa/Dockerfile"
 startCommand = "rasa run --enable-api --cors '*' --port $PORT --host 0.0.0.0"
 healthcheckPath = "/status"
 healthcheckTimeout = 300
 
-[services.rasa-server.env]
+[service.rasa-server.env]
 PORT = "5005"
 RASA_MODEL_SERVER = "http://localhost:5005"
 
-[[services]]
-id = "web-dashboard"
-name = "web-dashboard"
-source = "web-dashboard"
+[service.web-dashboard]
+root = "web-dashboard"
+dockerfile = "web-dashboard/Dockerfile"
 startCommand = "nginx -g 'daemon off;'"
 healthcheckPath = "/"
 
-[services.web-dashboard.env]
+[service.web-dashboard.env]
 PORT = "80"
