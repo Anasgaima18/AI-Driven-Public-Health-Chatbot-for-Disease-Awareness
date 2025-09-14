@@ -3,3 +3,17 @@ uvicorn
 requests
 python-dotenv
 twilio
+transformers
+torch
+googletrans
+google-cloud-translate
+huggingface-hub
+sentencepiece
+protobuf
+accelerate
+psycopg2-binary
+sqlalchemy
+google-generativeai
+schedule
+spacy
+nltk

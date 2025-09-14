@@ -1,8 +1,5 @@
 language: "en"
-pipeline:
-  - name: WhitespaceTokenizer
-  - name: CountVectorsFeaturizer
-  - name: DIETClassifier
+
   - name: EntitySynonymMapper
   - name: ResponseSelector
 policies:

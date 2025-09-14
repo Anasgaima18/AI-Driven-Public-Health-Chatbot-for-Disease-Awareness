@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  action-server:
+    build: ./action-server
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONPATH=/app
+      - ENVIRONMENT=development
+    env_file:
+      - .env
+    volumes:
+      - ./action-server:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health-check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - postgres
+
+  rasa-server:
+    build: ./rasa
+    ports:
+      - "5005:5005"
+    environment:
+      - PORT=5005
+      - RASA_MODEL_SERVER=http://localhost:5005
+    volumes:
+      - ./rasa:/app
+      - ./models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web-dashboard:
+    build: ./web-dashboard
+    ports:
+      - "3000:80"
+    environment:
+      - PORT=80
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=healthchatbot
+      - POSTGRES_USER=healthuser
+      - POSTGRES_PASSWORD=healthpass123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

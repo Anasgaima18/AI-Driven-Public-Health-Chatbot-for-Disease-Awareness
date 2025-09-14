@@ -1,23 +1,492 @@
-<!doctype html>
-<html>
-<head><meta charset="utf-8"><title>SIH25049 Dashboard (placeholder)</title></head>
-<body>
-  <h1>SIH25049 — Dashboard (Placeholder)</h1>
-  <p>This is a simple placeholder dashboard. Replace with React app when ready.</p>
-  <form id="alertForm">
-    <label>District: <input id="district" value="Bengaluru"></label><br>
-    <label>Message: <input id="message" value="Demo: Dengue cases rising — remove standing water."></label><br>
-    <button type="button" onclick="sendAlert()">Send Alert (demo)</button>
-  </form>
-  <pre id="result"></pre>
-<script>
-async function sendAlert(){
-  const d = document.getElementById('district').value;
-  const m = document.getElementById('message').value;
-  const resp = await fetch('/api/send-alert', {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:`district=${encodeURIComponent(d)}&message=${encodeURIComponent(m)}`});
-  const j = await resp.json();
-  document.getElementById('result').textContent = JSON.stringify(j, null, 2);
-}
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIH25049 - AI-Driven Public Health Chatbot Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .alert-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            color: white;
+        }
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+        .nav-link {
+            color: white !important;
+        }
+        .nav-link:hover {
+            color: #f8f9fa !important;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-heartbeat fa-3x text-white"></i>
+                        <h5 class="text-white mt-2">Health Chatbot</h5>
+                        <small class="text-white-50">SIH25049 Dashboard</small>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#overview" onclick="showSection('overview')">
+                                <i class="fas fa-dashboard me-2"></i>Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#alerts" onclick="showSection('alerts')">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Health Alerts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#outbreaks" onclick="showSection('outbreaks')">
+                                <i class="fas fa-virus me-2"></i>Disease Outbreaks
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#analytics" onclick="showSection('analytics')">
+                                <i class="fas fa-chart-bar me-2"></i>Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#users" onclick="showSection('users')">
+                                <i class="fas fa-users me-2"></i>User Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#settings" onclick="showSection('settings')">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">AI-Driven Public Health Chatbot Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshData()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <div id="overview" class="section">
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-uppercase mb-1">Total Queries Today</div>
+                                            <div class="h5 mb-0 font-weight-bold" id="totalQueries">1,247</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-comments fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-uppercase mb-1">Accuracy Rate</div>
+                                            <div class="h5 mb-0 font-weight-bold" id="accuracyRate">87.3%</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-bullseye fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-uppercase mb-1">Active Users</div>
+                                            <div class="h5 mb-0 font-weight-bold" id="activeUsers">3,542</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user-check fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card metric-card">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-uppercase mb-1">Alerts Sent</div>
+                                            <div class="h5 mb-0 font-weight-bold" id="alertsSent">156</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-bell fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-line me-1"></i>
+                                    Daily Query Volume
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="queryChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-language me-1"></i>
+                                    Language Distribution
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="languageChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Alerts Section -->
+                <div id="alerts" class="section" style="display:none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Send Health Alert</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="alertForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="alertType" class="form-label">Alert Type</label>
+                                            <select class="form-select" id="alertType">
+                                                <option value="outbreak">Disease Outbreak</option>
+                                                <option value="vaccination">Vaccination Campaign</option>
+                                                <option value="general">General Health Advisory</option>
+                                                <option value="emergency">Emergency Alert</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="targetLocation" class="form-label">Target Location</label>
+                                            <input type="text" class="form-control" id="targetLocation" placeholder="e.g., Bengaluru, Karnataka">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="alertTitle" class="form-label">Alert Title</label>
+                                            <input type="text" class="form-control" id="alertTitle" placeholder="Alert title">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="targetLanguage" class="form-label">Primary Language</label>
+                                            <select class="form-select" id="targetLanguage">
+                                                <option value="en">English</option>
+                                                <option value="hi">Hindi</option>
+                                                <option value="bn">Bengali</option>
+                                                <option value="te">Telugu</option>
+                                                <option value="ta">Tamil</option>
+                                                <option value="mr">Marathi</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="alertMessage" class="form-label">Alert Message</label>
+                                    <textarea class="form-control" id="alertMessage" rows="4" placeholder="Enter your health alert message here..."></textarea>
+                                </div>
+                                <button type="button" class="btn btn-custom" onclick="sendHealthAlert()">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Alert
+                                </button>
+                            </form>
+                            <div id="alertResult" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disease Outbreaks Section -->
+                <div id="outbreaks" class="section" style="display:none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-virus me-2"></i>Current Disease Outbreaks</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="outbreaksList">
+                                <!-- Outbreak data will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Section -->
+                <div id="analytics" class="section" style="display:none;">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-chart-bar me-2"></i>Chatbot Performance Analytics</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div id="users" class="section" style="display:none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-users me-2"></i>User Management</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>User management features coming soon...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settings" class="section" style="display:none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-cog me-2"></i>System Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>System configuration options coming soon...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8000'; // Update this to your action server URL
+
+        // Show/hide sections
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionName).style.display = 'block';
+            
+            if (sectionName === 'outbreaks') {
+                loadOutbreaks();
+            }
+        }
+
+        // Send health alert
+        async function sendHealthAlert() {
+            const alertType = document.getElementById('alertType').value;
+            const title = document.getElementById('alertTitle').value;
+            const message = document.getElementById('alertMessage').value;
+            const location = document.getElementById('targetLocation').value;
+            const language = document.getElementById('targetLanguage').value;
+
+            if (!title || !message || !location) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('alert_type', alertType);
+                formData.append('title', title);
+                formData.append('message', message);
+                formData.append('target_location', location);
+                formData.append('target_language', language);
+
+                const response = await fetch(`${API_BASE_URL}/send-health-alert`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                document.getElementById('alertResult').innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Success!</strong> Alert queued for delivery.
+                        <br>Alert ID: ${result.alert_id}
+                        <br>Estimated Recipients: ${result.estimated_recipients}
+                    </div>
+                `;
+                
+                // Clear form
+                document.getElementById('alertForm').reset();
+                
+            } catch (error) {
+                document.getElementById('alertResult').innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>Error!</strong> Failed to send alert: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Load outbreaks
+        async function loadOutbreaks() {
+            try {
+                // For demo, using sample data
+                const outbreaks = [
+                    {
+                        disease: 'Dengue',
+                        location: 'Bengaluru',
+                        severity: 'moderate',
+                        cases: 45,
+                        prevention: 'Remove standing water, use mosquito nets'
+                    },
+                    {
+                        disease: 'Chikungunya',
+                        location: 'Mumbai',
+                        severity: 'low',
+                        cases: 12,
+                        prevention: 'Vector control measures'
+                    }
+                ];
+
+                let html = '';
+                outbreaks.forEach(outbreak => {
+                    const severityColor = outbreak.severity === 'high' ? 'danger' : 
+                                        outbreak.severity === 'moderate' ? 'warning' : 'info';
+                    
+                    html += `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6 class="card-title">${outbreak.disease} - ${outbreak.location}</h6>
+                                        <p class="card-text">${outbreak.prevention}</p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <span class="badge bg-${severityColor}">${outbreak.severity}</span>
+                                        <p class="mt-2"><strong>Cases: ${outbreak.cases}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('outbreaksList').innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading outbreaks:', error);
+            }
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Query Chart
+            const queryCtx = document.getElementById('queryChart').getContext('2d');
+            new Chart(queryCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Daily Queries',
+                        data: [1200, 1350, 1100, 1400, 1247, 980, 850],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Language Chart
+            const langCtx = document.getElementById('languageChart').getContext('2d');
+            new Chart(langCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hindi', 'English', 'Bengali', 'Telugu', 'Tamil', 'Others'],
+                    datasets: [{
+                        data: [35, 25, 15, 10, 8, 7],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Refresh data
+        function refreshData() {
+            // Simulate data refresh
+            console.log('Refreshing dashboard data...');
+            loadOutbreaks();
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            showSection('overview');
+        });
+    </script>
 </body>
 </html>
