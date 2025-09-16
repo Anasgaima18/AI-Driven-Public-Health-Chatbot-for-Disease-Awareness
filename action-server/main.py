@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 import schedule
 import threading
 import time
+from biobert_processor import get_biobert_processor
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -285,6 +286,13 @@ class MultilingualTranslator:
 
 # Initialize the multilingual translator
 translator = MultilingualTranslator()
+
+# Initialize Bio-BERT processor for biomedical text analysis
+biobert_processor = get_biobert_processor()
+if biobert_processor:
+    logger.info("Bio-BERT processor initialized successfully")
+else:
+    logger.warning("Bio-BERT processor initialization failed - biomedical features will be limited")
 
 class GenerateRequest(BaseModel):
     text: str
@@ -947,7 +955,8 @@ async def health_check():
         "version": "1.0.0",
         "nllb_model_loaded": translator.nllb_model is not None,
         "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
-        "timestamp": "2025-09-14T10:30:00Z"
+        "biobert_processor": biobert_processor is not None,
+        "timestamp": datetime.utcnow().isoformat()
     }
 
 @app.get("/supported-languages")
@@ -970,3 +979,243 @@ async def supported_languages():
             {"code": "en", "name": "English", "native": "English"}
         ]
     }
+
+# Bio-BERT Enhanced Endpoints
+
+class SymptomAnalysisRequest(BaseModel):
+    text: str
+    language: Optional[str] = "en"
+
+class DiseaseClassificationRequest(BaseModel):
+    symptoms: List[str]
+    context: Optional[str] = ""
+    language: Optional[str] = "en"
+
+class MedicalAssessmentRequest(BaseModel):
+    symptoms: List[str]
+    description: str
+    language: Optional[str] = "en"
+
+@app.post("/analyze-symptoms")
+async def analyze_symptoms(request: SymptomAnalysisRequest):
+    """Extract and analyze symptoms from biomedical text using Bio-BERT"""
+    try:
+        if not biobert_processor:
+            return {
+                "error": "Bio-BERT processor not available",
+                "symptoms": [],
+                "message": "Advanced symptom analysis is currently unavailable"
+            }
+
+        # Translate to English if needed for Bio-BERT processing
+        text_to_analyze = request.text
+        if request.language and request.language != "en":
+            text_to_analyze = translator.translate_with_nllb(request.text, request.language, "en")
+
+        # Extract symptoms using Bio-BERT
+        symptoms_found = biobert_processor.extract_symptoms(text_to_analyze)
+
+        # Translate symptom names back to original language if needed
+        if request.language and request.language != "en":
+            for symptom in symptoms_found:
+                symptom["symptom"] = translator.translate_with_nllb(
+                    symptom["symptom"], "en", request.language
+                )
+
+        return {
+            "symptoms": symptoms_found,
+            "total_symptoms": len(symptoms_found),
+            "language": request.language,
+            "biobert_processed": True
+        }
+
+    except Exception as e:
+        logger.error(f"Symptom analysis error: {e}")
+        return {
+            "error": str(e),
+            "symptoms": [],
+            "message": "Error processing symptom analysis"
+        }
+
+@app.post("/classify-disease")
+async def classify_disease(request: DiseaseClassificationRequest):
+    """Classify potential diseases based on symptoms using Bio-BERT"""
+    try:
+        if not biobert_processor:
+            return {
+                "error": "Bio-BERT processor not available",
+                "diseases": [],
+                "message": "Disease classification is currently unavailable"
+            }
+
+        # Translate symptoms and context to English for processing
+        symptoms_en = request.symptoms
+        context_en = request.context or ""
+
+        if request.language and request.language != "en":
+            symptoms_en = [
+                translator.translate_with_nllb(symptom, request.language, "en")
+                for symptom in request.symptoms
+            ]
+            if request.context:
+                context_en = translator.translate_with_nllb(request.context, request.language, "en")
+
+        # Classify diseases using Bio-BERT
+        diseases_found = biobert_processor.classify_disease(symptoms_en, context_en)
+
+        # Translate disease names back to original language if needed
+        if request.language and request.language != "en":
+            for disease in diseases_found:
+                disease["disease"] = translator.translate_with_nllb(
+                    disease["disease"], "en", request.language
+                )
+
+        return {
+            "diseases": diseases_found,
+            "total_diseases": len(diseases_found),
+            "symptoms_analyzed": symptoms_en,
+            "language": request.language,
+            "biobert_processed": True
+        }
+
+    except Exception as e:
+        logger.error(f"Disease classification error: {e}")
+        return {
+            "error": str(e),
+            "diseases": [],
+            "message": "Error processing disease classification"
+        }
+
+@app.post("/assess-severity")
+async def assess_severity(request: MedicalAssessmentRequest):
+    """Assess severity of symptoms using Bio-BERT"""
+    try:
+        if not biobert_processor:
+            return {
+                "error": "Bio-BERT processor not available",
+                "severity": "unknown",
+                "message": "Severity assessment is currently unavailable"
+            }
+
+        # Translate to English for processing
+        symptoms_en = request.symptoms
+        description_en = request.description
+
+        if request.language and request.language != "en":
+            symptoms_en = [
+                translator.translate_with_nllb(symptom, request.language, "en")
+                for symptom in request.symptoms
+            ]
+            description_en = translator.translate_with_nllb(request.description, request.language, "en")
+
+        # Assess severity using Bio-BERT
+        severity_assessment = biobert_processor.assess_severity(symptoms_en, description_en)
+
+        # Translate recommendation back to original language if needed
+        if request.language and request.language != "en":
+            severity_assessment["recommendation"] = translator.translate_with_nllb(
+                severity_assessment["recommendation"], "en", request.language
+            )
+
+        return {
+            "severity_assessment": severity_assessment,
+            "symptoms_analyzed": symptoms_en,
+            "language": request.language,
+            "biobert_processed": True
+        }
+
+    except Exception as e:
+        logger.error(f"Severity assessment error: {e}")
+        return {
+            "error": str(e),
+            "severity_assessment": {"severity_level": "unknown", "recommendation": "Please consult a healthcare professional"},
+            "message": "Error processing severity assessment"
+        }
+
+@app.post("/comprehensive-medical-analysis")
+async def comprehensive_medical_analysis(request: MedicalAssessmentRequest):
+    """Perform comprehensive medical analysis using Bio-BERT"""
+    try:
+        if not biobert_processor:
+            return {
+                "error": "Bio-BERT processor not available",
+                "analysis": {},
+                "message": "Comprehensive analysis is currently unavailable"
+            }
+
+        # Translate to English for processing
+        symptoms_en = request.symptoms
+        description_en = request.description
+
+        if request.language and request.language != "en":
+            symptoms_en = [
+                translator.translate_with_nllb(symptom, request.language, "en")
+                for symptom in request.symptoms
+            ]
+            description_en = translator.translate_with_nllb(request.description, request.language, "en")
+
+        # Perform comprehensive analysis
+        symptoms_found = biobert_processor.extract_symptoms(description_en)
+        diseases_found = biobert_processor.classify_disease(symptoms_en, description_en)
+        severity_assessment = biobert_processor.assess_severity(symptoms_en, description_en)
+
+        # Generate medical summary
+        symptom_names = [s["symptom"] for s in symptoms_found] + symptoms_en
+        medical_summary = biobert_processor.generate_medical_summary(
+            list(set(symptom_names)), diseases_found, severity_assessment
+        )
+
+        # Translate results back to original language if needed
+        if request.language and request.language != "en":
+            severity_assessment["recommendation"] = translator.translate_with_nllb(
+                severity_assessment["recommendation"], "en", request.language
+            )
+            medical_summary = translator.translate_with_nllb(medical_summary, "en", request.language)
+
+            # Translate symptom and disease names
+            for symptom in symptoms_found:
+                symptom["symptom"] = translator.translate_with_nllb(
+                    symptom["symptom"], "en", request.language
+                )
+            for disease in diseases_found:
+                disease["disease"] = translator.translate_with_nllb(
+                    disease["disease"], "en", request.language
+                )
+
+        return {
+            "symptoms_detected": symptoms_found,
+            "potential_diseases": diseases_found,
+            "severity_assessment": severity_assessment,
+            "medical_summary": medical_summary,
+            "language": request.language,
+            "biobert_processed": True,
+            "analysis_timestamp": datetime.utcnow().isoformat()
+        }
+
+    except Exception as e:
+        logger.error(f"Comprehensive analysis error: {e}")
+        return {
+            "error": str(e),
+            "symptoms_detected": [],
+            "potential_diseases": [],
+            "severity_assessment": {"severity_level": "unknown"},
+            "medical_summary": "Error generating medical summary. Please consult a healthcare professional.",
+            "message": "Error processing comprehensive analysis"
+        }
+
+@app.get("/biobert-status")
+async def biobert_status():
+    """Check Bio-BERT processor status"""
+    if biobert_processor:
+        return {
+            "status": "available",
+            "model": biobert_processor.model_name,
+            "device": str(biobert_processor.device),
+            "symptom_classifier": biobert_processor.symptom_classifier is not None,
+            "disease_classifier": biobert_processor.disease_classifier is not None
+        }
+    else:
+        return {
+            "status": "unavailable",
+            "message": "Bio-BERT processor not initialized"
+        }

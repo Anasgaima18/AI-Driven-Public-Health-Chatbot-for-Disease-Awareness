@@ -17,3 +17,7 @@ google-generativeai
 schedule
 spacy
 nltk
+datasets
+scikit-learn
+scipy
+biobert-embedding
